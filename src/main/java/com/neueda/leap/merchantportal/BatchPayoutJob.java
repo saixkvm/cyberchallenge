@@ -20,9 +20,10 @@ public class BatchPayoutJob {
                 bankTransferClient.transfer(payout.getMerchantId(), payout.getAmount());
                 payout.setApprovalStatus("PAID");
             } catch (BankTransferException e) {
-                log.warn("Transfer failed for payout {}, marking paid anyway: {}",
+                // Never mark a payout as PAID when the transfer actually failed.
+                log.error("Transfer failed for payout {}, marking as FAILED for retry/investigation: {}",
                         payout.getId(), e.getMessage());
-                payout.setApprovalStatus("PAID");
+                payout.setApprovalStatus("FAILED");
             }
             payoutRepository.save(payout);
         }
